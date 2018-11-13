@@ -2,8 +2,7 @@
 
 source ./functions.sh
 
-#cpu=4
-#export cpu
+#evalThreads=8
 
 for i in {1..100} ; do
 

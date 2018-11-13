@@ -1,25 +1,19 @@
 #!/bin/bash
 
-eval_mt () {
+declare -a evalPids=()
 
-	if [ -z ${cpu+x} ]; then cpu=`nproc` ; fi
+# run command in parallel. Define evalThreads=x to override default (# processors)
+function eval_mt {
+	cmd=$1
 
-	export cmd=$1
+	while :
+	do
+		if [[ ${#evalPids[@]} -lt ${evalThreads-$(nproc)} ]]
+		then
+			eval $cmd & evalPids+=($!)
+			break
+		fi
 
-	while : ; do
-
-		activ=()
-
-		for pid in ${pids[@]} ; do
-
-			activ+=(`ps -p $pid | grep -o $pid`) ; done
-
-		pids=(${activ[@]})
-
-		if [ ${#pids[@]} -lt $cpu ] ; then
-
-			eval $cmd & pids+=($!) && export pids
-			break ; fi
-
-	done ; }
-
+		evalPids=($(ps -opid= -p ${evalPids[@]}))
+	done
+}
